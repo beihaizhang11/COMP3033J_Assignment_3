@@ -1,126 +1,117 @@
 package GraphicsObjects;
 
+
+
 public class Vector4f {
 
-	public float x = 0;
-	public float y = 0;
-	public float z = 0;
-	public float a = 0;
+	public float x=0;
+	public float y=0;
+	public float z=0;
+	public float a=0;
 
-	public Vector4f() {
+	public Vector4f()
+	{
 		x = 0.0f;
 		y = 0.0f;
 		z = 0.0f;
 		a = 0.0f;
 	}
 
-	public Vector4f(float x, float y, float z, float a) {
+	public Vector4f(float x, float y, float z,float a)
+	{
 		this.x = x;
 		this.y = y;
 		this.z = z;
 		this.a = a;
 	}
 
-	// implement Vector plus a Vector
-	public Vector4f PlusVector(Vector4f Additonal) {
-		return new Vector4f(this.x + Additonal.x, this.y + Additonal.y, this.z + Additonal.z, this.a + Additonal.a);
+	//implement Vector plus a Vector
+	public Vector4f PlusVector(Vector4f additional) {
+		return new Vector4f(this.x + additional.x, this.y + additional.y, this.z + additional.z, this.a + additional.a);
 	}
 
-	// implement Vector minus a Vector
-	public Vector4f MinusVector(Vector4f Minus) {
-		return new Vector4f(
-			this.x - Minus.x,
-			this.y - Minus.y,
-			this.z - Minus.z,
-			this.a - Minus.a
-		);
+	//implement Vector minus a Vector
+	public Vector4f MinusVector(Vector4f minus) {
+		return new Vector4f(this.x - minus.x, this.y - minus.y, this.z - minus.z, this.a - minus.a);
 	}
 
-	// implement Vector plus a Point
-	public Point4f PlusPoint(Point4f Additonal) {
-		return new Point4f(
-			this.x + Additonal.x,
-			this.y + Additonal.y,
-			this.z + Additonal.z,
-			this.a + Additonal.a
-		);
-	}
-	// Do not implement Vector minus a Point as it is undefined
 
-	// Implement a Vector * Scalar
+	//implement Vector plus a Point
+	public Point4f PlusPoint(Point4f point) {
+		return new Point4f(this.x + point.x, this.y + point.y, this.z + point.z, this.a + point.a);
+	}
+	//Do not implement Vector minus a Point as it is undefined
+
+	//Implement a Vector * Scalar
 	public Vector4f byScalar(float scale) {
-		return new Vector4f(
-			this.x * scale,
-			this.y * scale,
-			this.z * scale,
-			this.a * scale
-		);
+		return new Vector4f(this.x * scale, this.y * scale, this.z * scale, this.a * scale);
 	}
 
-	// implement returning the negative of a Vector
+
+	//implement returning the negative of a  Vector
 	public Vector4f NegateVector() {
-		return new Vector4f(
-			-this.x,
-			-this.y,
-			-this.z,
-			-this.a
-		);
+		return new Vector4f(-this.x, -this.y, -this.z, -this.a);
 	}
 
-	// implement getting the length of a Vector
+
+	//implement getting the length of a Vector
 	public float length() {
-		return (float) Math.sqrt(x * x + y * y + z * z + a * a);
+		return (float) Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.a * this.a);
 	}
 
-	// Just to avoid confusion here is getting the Normal of a Vector
+	//implement getting the Normal  of a Vector
 	public Vector4f Normal() {
-		float LengthOfTheVector = this.length();
-		return this.byScalar(1.0f / LengthOfTheVector);
+		float mag = length();
+		if (mag == 0) {
+			return new Vector4f(0, 0, 0, 0);
+		}
+		return new Vector4f(this.x / mag, this.y / mag, this.z / mag, this.a / mag);
 	}
 
-	// implement getting the dot product of Vector.Vector
+	//implement getting the dot product of Vector.Vector
 
-	public float dot(Vector4f v) {
-		return (0.0f);
+	public float dot(Vector4f v)
+	{
+		return ( this.x*v.x + this.y*v.y + this.z*v.z+ this.a*v.a);
 	}
 
 	// Implemented this for you to avoid confusion
-	// as we will not normally be using 4 float vector
-	public Vector4f cross(Vector4f v) {
-		return new Vector4f(
-			this.y * v.z - this.z * v.y,
-			this.z * v.x - this.x * v.z,
-			this.x * v.y - this.y * v.x,
-			0.0f
-		);
+	// as we will not normally  be using 4 float vector
+	public Vector4f cross(Vector4f v)
+	{
+		float u0 = (this.y*v.z - z*v.y);
+		float u1 = (z*v.x - x*v.z);
+		float u2 = (x*v.y - y*v.x);
+		float u3 = 0; //ignoring this for now
+		return new Vector4f(u0,u1,u2,u3);
 	}
 
 }
-	 
-	   
+
+
 
 /*
 
-										MMMM                                        
-										MMMMMM                                      
- 										MM MMMM                                    
- 										MMI  MMMM                                  
- 										MMM    MMMM                                
- 										MMM      MMMM                              
-  										MM        MMMMM                           
-  										MMM         MMMMM                         
-  										MMM           OMMMM                       
-   										MM             .MMMM                     
-MMMMMMMMMMMMMMM                        MMM              .MMMM                   
-MM   IMMMMMMMMMMMMMMMMMMMMMMMM         MMM                 MMMM                 
-MM                  ~MMMMMMMMMMMMMMMMMMMMM                   MMMM               
-MM                                  OMMMMM                     MMMMM            
-MM                                                               MMMMM          
-MM                                                                 MMMMM        
-MM                                                                   ~MMMM      
-MM                                                                     =MMMM    
-MM                                                                        MMMM  
-MM                                                                       MMMMMM 
+										MMMM
+										MMMMMM
+ 										MM MMMM
+ 										MMI  MMMM
+ 										MMM    MMMM
+ 										MMM      MMMM
+  										MM        MMMMM
+  										MMM         MMMMM
+  										MMM           OMMMM
+   										MM             .MMMM
+MMMMMMMMMMMMMMM                        MMM              .MMMM
+MM   IMMMMMMMMMMMMMMMMMMMMMMMM         MMM                 MMMM
+MM                  ~MMMMMMMMMMMMMMMMMMMMM                   MMMM
+MM                                  OMMMMM                     MMMMM
+MM                                                               MMMMM
+MM                                                                 MMMMM
+MM                                                                   ~MMMM
+MM                                                                     =MMMM
+MM                                                                        MMMM
+MM                                4 D                                      MMMMMM
 MM                                                                     MMMMMMMM 
 MM                                                                  :MMMMMMMM   
 MM                                                                MMMMMMMMM     

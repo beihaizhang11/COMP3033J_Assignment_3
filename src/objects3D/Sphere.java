@@ -1,54 +1,38 @@
 package objects3D;
 
-import static org.lwjgl.opengl.GL11.*;
+import GraphicsObjects.Vector4f;
+import org.lwjgl.opengl.GL11;
 
 public class Sphere {
+	// Method to draw a Sphere using OpenGL
+	public void drawSphere(float radius, int slices, int stacks) {
+		// Loop through each stack to draw the Sphere
+		for (int i = 0; i < stacks; i++) {
+			float lat0 = (float) Math.PI * (-0.5f + (float) (i) / stacks);
+			float z0 = (float) Math.sin(lat0);
+			float zr0 = (float) Math.cos(lat0);
 
-	public Sphere() {
+			float lat1 = (float) Math.PI * (-0.5f + (float) (i + 1) / stacks);
+			float z1 = (float) Math.sin(lat1);
+			float zr1 = (float) Math.cos(lat1);
 
-	}
+			// Start drawing quads for each stack
+			GL11.glBegin(GL11.GL_QUAD_STRIP);
+			for (int j = 0; j <= slices; j++) {
+				float lng = (float) (2 * Math.PI * (j - 1) / slices);
+				float x = (float) Math.cos(lng);
+				float y = (float) Math.sin(lng);
 
-	// Implement using notes and examine Tetrahedron to aid in the coding look at
-	// lecture 7 , 7b and 8
-	// 7b should be your primary source, we will cover more about circles in later
-	// lectures to understand why the code works
-	public void drawSphere(float radius, float nSlices, float nSegments) {
-		float x, y, z;
-		float inctheta = (float) (2.0f * Math.PI / nSlices);
-		float incphi = (float) (Math.PI / nSegments);
-		
-		glBegin(GL_QUADS);
-		for (float theta = (float) -Math.PI; theta < Math.PI; theta += inctheta) {
-			for (float phi = (float) -(Math.PI/2.0f); phi < (Math.PI/2.0f); phi += incphi) {
-				// First vertex
-				x = (float) (Math.cos(phi) * Math.cos(theta) * radius);
-				y = (float) (Math.cos(phi) * Math.sin(theta) * radius);
-				z = (float) (Math.sin(phi) * radius);
-				glNormal3f(x/radius, y/radius, z/radius);
-				glVertex3f(x, y, z);
-				
-				// Second vertex
-				x = (float) (Math.cos(phi) * Math.cos(theta + inctheta) * radius);
-				y = (float) (Math.cos(phi) * Math.sin(theta + inctheta) * radius);
-				z = (float) (Math.sin(phi) * radius);
-				glNormal3f(x/radius, y/radius, z/radius);
-				glVertex3f(x, y, z);
-				
-				// Third vertex
-				x = (float) (Math.cos(phi + incphi) * Math.cos(theta + inctheta) * radius);
-				y = (float) (Math.cos(phi + incphi) * Math.sin(theta + inctheta) * radius);
-				z = (float) (Math.sin(phi + incphi) * radius);
-				glNormal3f(x/radius, y/radius, z/radius);
-				glVertex3f(x, y, z);
-				
-				// Fourth vertex
-				x = (float) (Math.cos(phi + incphi) * Math.cos(theta) * radius);
-				y = (float) (Math.cos(phi + incphi) * Math.sin(theta) * radius);
-				z = (float) (Math.sin(phi + incphi) * radius);
-				glNormal3f(x/radius, y/radius, z/radius);
-				glVertex3f(x, y, z);
+				// Set the normal and draw each vertex of the quad strip
+				GL11.glNormal3f(x * zr0, y * zr0, z0);
+				Vector4f tempVector0 = new Vector4f(x * zr0 * radius, y * zr0 * radius, z0 * radius, 1.0f);
+				GL11.glVertex3f(tempVector0.x, tempVector0.y, tempVector0.z);
+
+				GL11.glNormal3f(x * zr1, y * zr1, z1);
+				Vector4f tempVector1 = new Vector4f(x * zr1 * radius, y * zr1 * radius, z1 * radius, 1.0f);
+				GL11.glVertex3f(tempVector1.x, tempVector1.y, tempVector1.z);
 			}
+			GL11.glEnd(); // End drawing the quad strip
 		}
-		glEnd();
 	}
 }

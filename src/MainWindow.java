@@ -21,12 +21,13 @@ import GraphicsObjects.Utils;
 import objects3D.TexSphere;
 import objects3D.Grid;
 import objects3D.Human;
+import objects3D.TexCube;
 
-//Main windows class controls and creates the 3D virtual world , please do not change this class but edit the other classes to complete the assignment.
-// Main window is built upon the standard Helloworld LWJGL class which I have heavily modified to use as your standard openGL environment.
-//
+//Main windows class controls and creates the 3D virtual world , please do not change this class but edit the other classes to complete the assignment. 
+// Main window is built upon the standard Helloworld LWJGL class which I have heavily modified to use as your standard openGL environment. 
+// 
 
-// Do not touch this class, I will be making a version of it for your 3rd Assignment
+// Do not touch this class, I will be making a version of it for your 3rd Assignment 
 public class MainWindow {
 
 	private boolean MouseOnepressed = true;
@@ -60,8 +61,8 @@ public class MainWindow {
 	float pullY = 0.0f; // arc ball Y cord.
 
 	int OrthoNumber = 1200; // using this for screen size, making a window of 1200 x 800 so aspect ratio 3:2
-	// // do not change this for assignment 3 but you can change everything for your
-	// project
+							// // do not change this for assignment 3 but you can change everything for your
+							// project
 
 	// basic colours
 	static float black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -128,8 +129,8 @@ public class MainWindow {
 		boolean MouseButonPressed = Mouse.isButtonDown(0);
 
 		if (MouseButonPressed && !MouseOnepressed) {
-			System.out.println("Mouse drag started at: " + MouseX + "," + MouseY);
 			MouseOnepressed = true;
+			// System.out.println("Mouse drag mode");
 			MyArcball.startBall(MouseX, MouseY, 1200, 800);
 			dragMode = true;
 
@@ -140,7 +141,6 @@ public class MainWindow {
 		}
 
 		if (dragMode) {
-			System.out.println("Dragging at: " + MouseX + "," + MouseY);
 			MyArcball.updateBall(MouseX, MouseY, 1200, 800);
 		}
 
@@ -180,7 +180,7 @@ public class MainWindow {
 		if (Keyboard.isKeyDown(Keyboard.KEY_E)) {
 			Earth = !Earth;
 		}
-
+		
 		if (waitForKeyrelease) // check done to see if key is released
 		{
 			if (Keyboard.isKeyDown(Keyboard.KEY_G)) {
@@ -222,7 +222,7 @@ public class MainWindow {
 
 	/**
 	 * Calculate how many milliseconds have passed since last frame.
-	 *
+	 * 
 	 * @return milliseconds passed since last frame
 	 */
 	public int getDelta() {
@@ -235,7 +235,7 @@ public class MainWindow {
 
 	/**
 	 * Get the accurate system time
-	 *
+	 * 
 	 * @return The system time in milliseconds
 	 */
 	public long getTime() {
@@ -255,20 +255,11 @@ public class MainWindow {
 	}
 
 	public void initGL() {
-		// 设置投影矩阵
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-
-		// 初始化Arcball
-		MyArcball.startBall(0, 0, 1200, 800);
-
-		// 切换到模型视图矩阵
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		// 应用初始变换
 		changeOrth();
-
+		MyArcball.startBall(0, 0, 1200, 800);
+		glMatrixMode(GL_MODELVIEW);
 		FloatBuffer lightPos = BufferUtils.createFloatBuffer(4);
 		lightPos.put(10000f).put(1000f).put(1000).put(0).flip();
 
@@ -282,38 +273,38 @@ public class MainWindow {
 		lightPos4.put(1000f).put(1000f).put(1000f).put(0).flip();
 
 		glLight(GL_LIGHT0, GL_POSITION, lightPos); // specify the
-		// position
-		// of the
-		// light
+													// position
+													// of the
+													// light
 		// glEnable(GL_LIGHT0); // switch light #0 on // I've setup specific materials
 		// so in real light it will look abit strange
 
 		glLight(GL_LIGHT1, GL_POSITION, lightPos); // specify the
-		// position
-		// of the
-		// light
+													// position
+													// of the
+													// light
 		glEnable(GL_LIGHT1); // switch light #0 on
 		glLight(GL_LIGHT1, GL_DIFFUSE, Utils.ConvertForGL(spot));
 
 		glLight(GL_LIGHT2, GL_POSITION, lightPos3); // specify
-		// the
-		// position
-		// of the
-		// light
+													// the
+													// position
+													// of the
+													// light
 		glEnable(GL_LIGHT2); // switch light #0 on
 		glLight(GL_LIGHT2, GL_DIFFUSE, Utils.ConvertForGL(grey));
 
 		glLight(GL_LIGHT3, GL_POSITION, lightPos4); // specify
-		// the
-		// position
-		// of the
-		// light
+													// the
+													// position
+													// of the
+													// light
 		glEnable(GL_LIGHT3); // switch light #0 on
 		glLight(GL_LIGHT3, GL_DIFFUSE, Utils.ConvertForGL(grey));
 
 		glEnable(GL_LIGHTING); // switch lighting on
 		glEnable(GL_DEPTH_TEST); // make sure depth buffer is switched
-		// on
+									// on
 		glEnable(GL_NORMALIZE); // normalize normal vectors for safety
 		glEnable(GL_COLOR_MATERIAL);
 
@@ -329,52 +320,51 @@ public class MainWindow {
 	}
 
 	public void changeOrth() {
-		// 设置投影矩阵
+
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glOrtho(1200 - OrthoNumber, OrthoNumber, (800 - (OrthoNumber * 0.66f)), (OrthoNumber * 0.66f), 100000, -100000);
-
-		// 切换回模型视图矩阵
 		glMatrixMode(GL_MODELVIEW);
 
-		// 获取当前矩阵
 		FloatBuffer CurrentMatrix = BufferUtils.createFloatBuffer(16);
 		glGetFloat(GL_MODELVIEW_MATRIX, CurrentMatrix);
 
-		// 应用Arcball旋转
-		MyArcball.getMatrix(CurrentMatrix);
+		// if(MouseOnepressed)
+		// {
 
-		// 加载新的矩阵
+		MyArcball.getMatrix(CurrentMatrix);
+		// }
+
 		glLoadMatrix(CurrentMatrix);
+
 	}
 
 	/*
 	 * You can edit this method to add in your own objects / remember to load in
 	 * textures in the INIT method as they take time to load
-	 *
+	 * 
 	 */
 	public void renderGL() {
-		// 清除缓冲区
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-		// 重要：重置模型视图矩阵
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		// 应用Arcball旋转
 		changeOrth();
 
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glColor3f(0.5f, 0.5f, 1.0f);
 
 		myDelta = getTime() - StartTime;
 		float delta = ((float) myDelta) / 10000;
 
+		// code to aid in animation
 		float theta = (float) (delta * 2 * Math.PI);
 		float thetaDeg = delta * 360;
-		float posn_x = (float) Math.cos(theta);
+		float posn_x = (float) Math.cos(theta); // same as your circle code in your notes
 		float posn_y = (float) Math.sin(theta);
 
+		/*
+		 * This code draws a grid to help you view the human models movement You may
+		 * change this code to move the grid around and change its starting angle as you
+		 * please
+		 */
 		if (DRAWGRID) {
 			glPushMatrix();
 			Grid MyGrid = new Grid();
@@ -385,17 +375,50 @@ public class MainWindow {
 		}
 
 		glPushMatrix();
-		Human MyHuman = new Human();
+		Human MyHuman = new Human(headTexture, bodyTexture, chestTexture);
 		glTranslatef(300, 400, 0);
 		glScalef(90f, 90f, 90f);
 
 		if (!BadAnimation) {
-			// 动画代码
+			// Calculate the angle of the movement direction
+			float angle = (float) Math.toDegrees(Math.atan2(posn_y, posn_x));
+
+			// Increase the movement radius to 5.0f
+			glTranslatef(posn_x * 5.0f, posn_y * 5.0f, 0.0f);
+
+			// Only a fixed 90-degree rotation is needed to make the character stand upright, then rotate to the movement direction
+			glRotatef(90, 1.0f, 0.0f, 0.0f);  // Make the character stand upright (fixed, unchanged)
+			glRotatef(angle, 0.0f, 1.0f, 0.0f);
 		} else {
-			glTranslatef(posn_x * 3.0f, 0.0f, posn_y * 3.0f);
+			// bad animation version
+			float angle = (float) Math.toDegrees(Math.atan2(posn_y, posn_x));
+			glTranslatef(posn_x * 5.0f, posn_y * 5.0f, 0.0f);
+			glRotatef(90, 1.0f, 0.0f, 0.0f);
+			glRotatef(angle, 0.0f, 1.0f, 0.0f);
 		}
 
-		MyHuman.drawHuman(delta, !BadAnimation);
+		
+		MyHuman.drawHuman(delta, !BadAnimation); // give a delta for the Human object ot be animated
+
+		glPopMatrix();
+
+		// Add the sign rendering code here
+		glPushMatrix();
+		{
+			TexCube sign = new TexCube();
+			glTranslatef(600, 400, 0);
+			glScalef(100f, 50f, 1f);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+			Color.white.bind();
+			signTexture.bind();
+			glEnable(GL_TEXTURE_2D);
+
+			sign.DrawTexCube(1.0f, signTexture);
+			glDisable(GL_TEXTURE_2D);
+		}
 		glPopMatrix();
 
 		/*
@@ -419,7 +442,7 @@ public class MainWindow {
 			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 			MyGlobe.DrawTexSphere(8f, 100, 100, texture);
-			// MyGlobe.DrawTexCube();
+			//MyGlobe.DrawTexCube();
 			glPopMatrix();
 		}
 
@@ -431,6 +454,11 @@ public class MainWindow {
 	}
 
 	Texture texture;
+	Texture signTexture;  // Add sign texture variable
+	Texture headTexture;      // Add head texture 
+	Texture bodyTexture;      // Add body texture
+	Texture chestTexture;     // Add chest texture
+
 
 	/*
 	 * Any additional textures for your assignment should be written in here. Make a
@@ -439,6 +467,13 @@ public class MainWindow {
 	public void init() throws IOException {
 
 		texture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("res/earthspace.png"));
-		System.out.println("Texture loaded okay ");
+		signTexture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("res/sign.png"));
+		
+		// 加载人物纹理
+		headTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_jupiter.jpg"));
+		bodyTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_neptune.jpg"));
+		chestTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_sun.jpg"));
+		
+		System.out.println("Textures loaded okay ");
 	}
 }

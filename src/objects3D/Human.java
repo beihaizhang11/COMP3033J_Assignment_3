@@ -1,253 +1,389 @@
 package objects3D;
 
 import static org.lwjgl.opengl.GL11.*;
+import GraphicsObjects.Point4f;
 import GraphicsObjects.Utils;
+import GraphicsObjects.Vector4f;
+import org.newdawn.slick.Color;
 import org.newdawn.slick.opengl.Texture;
-import java.io.IOException;
-import org.newdawn.slick.opengl.TextureLoader;
-import org.newdawn.slick.util.ResourceLoader;
 
 public class Human {
-	// 定义颜色
-	static float skin[] = { 0.956f, 0.867f, 0.699f, 1.0f };
-	static float shirt[] = { 0.196f, 0.6f, 0.8f, 1.0f };
-	static float pants[] = { 0.25f, 0.25f, 0.25f, 1.0f };
-	static float shoes[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+
+	// basic colours
+	static float black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	static float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	
-	private Sphere sphere;
-	private Cylinder cylinder;
-	private TexCube texCube;
-	private TexCylinder texCylinder;
-	private TexSphere texSphere;
+
+	static float grey[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+	static float spot[] = { 0.1f, 0.1f, 0.1f, 0.5f };
+
+	// primary colours
+	static float red[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+	static float green[] = { 0.0f, 1.0f, 0.0f, 1.0f };
+	static float blue[] = { 0.0f, 0.0f, 1.0f, 1.0f };
+
+	// secondary colours
+	static float yellow[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+	static float magenta[] = { 1.0f, 0.0f, 1.0f, 1.0f };
+	static float cyan[] = { 0.0f, 1.0f, 1.0f, 1.0f };
+
+	// other colours
+	static float orange[] = { 1.0f, 0.5f, 0.0f, 1.0f, 1.0f };
+	static float brown[] = { 0.5f, 0.25f, 0.0f, 1.0f, 1.0f };
+	static float dkgreen[] = { 0.0f, 0.5f, 0.0f, 1.0f, 1.0f };
+	static float pink[] = { 1.0f, 0.6f, 0.6f, 1.0f, 1.0f };
+
+	/// Add texture variable
 	private Texture headTexture;
 	private Texture bodyTexture;
-	
-	// 无参构造函数
-	public Human() {
-		sphere = new Sphere();
-		cylinder = new Cylinder();
-		texCube = new TexCube();
-		texCylinder = new TexCylinder();
-		texSphere = new TexSphere();
-		
-		// 加载纹理
-		try {
-			this.bodyTexture = TextureLoader.getTexture("PNG", 
-				ResourceLoader.getResourceAsStream("res/textures/shirt.png"));
-			this.headTexture = TextureLoader.getTexture("PNG", 
-				ResourceLoader.getResourceAsStream("res/earthspace.png"));
-		} catch (IOException e) {
-			System.out.println("Could not load texture files");
-			this.bodyTexture = null;
-			this.headTexture = null;
-		}
+	private Texture chestTexture;
+
+	// Modify the constructor
+	public Human(Texture headTex, Texture bodyTex, Texture chestTex) {
+		this.headTexture = headTex;
+		this.bodyTexture = bodyTex;
+		this.chestTexture = chestTex;
 	}
 
+	/// Retain the original no-argument constructor
+	public Human() {
+
+	}
+
+	// Implement using notes in Animation lecture
 	public void drawHuman(float delta, boolean GoodAnimation) {
 		float theta = (float) (delta * 2 * Math.PI);
-		float swingFrequency = 1.0f;
-		float swingAmplitude = 25.0f;
+		float LimbRotation;
+		float RightLegRotation;
+		float LeftKneeRotation;   // Control the left and right knees separately
+		float RightKneeRotation;  // Control the left and right knees separately
 		
-		float leftArmRightLeg = GoodAnimation ? 
-			(float) Math.cos(theta * swingFrequency) * swingAmplitude : 0;
-		float rightArmLeftLeg = GoodAnimation ? 
-			(float) Math.cos(theta * swingFrequency + Math.PI) * swingAmplitude : 0;
-		
+		if (GoodAnimation) {
+			RightLegRotation = (float) Math.cos(theta) * 45;
+			LimbRotation = (float) Math.cos(theta + Math.PI) * 45;
+
+			// Bend the knee only when the leg swings backward (when the angle is positive)
+			LeftKneeRotation = (float) Math.max(0, -Math.cos(theta + Math.PI)) * -60;
+			RightKneeRotation = (float) Math.max(0, -Math.cos(theta)) * -60;
+		} else {
+			LimbRotation = 0;
+			RightLegRotation = 0;
+			LeftKneeRotation = 0;
+			RightKneeRotation = 0;
+		}
+
+		Sphere sphere = new Sphere();
+		Cylinder cylinder = new Cylinder();
+		TexSphere texSphere = new TexSphere();
+
 		glPushMatrix();
+
 		{
-			// 先绘制腿部
-			drawLeg(0.15f, rightArmLeftLeg);
-			drawLeg(-0.15f, leftArmRightLeg);
-			
-			// 躯干向上移动
 			glTranslatef(0.0f, 0.5f, 0.0f);
-			
-			// 绘制躯干
-			if (bodyTexture != null) {
-				drawTorso(bodyTexture);
-			} else {
-				drawTorsoWithoutTexture();
-			}
-			
-			// 头部和手臂
-			drawHead();
-			drawArm(0.3f, leftArmRightLeg);
-			drawArm(-0.3f, rightArmLeftLeg);
-		}
-		glPopMatrix();
-	}
 
-	private void drawTorsoWithoutTexture() {
-		glPushMatrix();
-		{
-			// 向下移动躯干高度的一半，使躯干中心点在坐标原点
-			glTranslatef(0.0f, 0.25f, 0.0f);
-			glColor3f(shirt[0], shirt[1], shirt[2]);
-			glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(shirt));
-			
-			// 将躯干旋转90度使其垂直
-			glRotatef(90, 1.0f, 0.0f, 0.0f);
-			
-			// 使用普通的cylinder绘制躯干
-			cylinder.drawCylinder(0.2f, 0.8f, 32);
-		}
-		glPopMatrix();
-	}
-
-	private void drawHead() {
-		glPushMatrix();
-		{
-			// 头部位置从躯干中心向上0.3单位
-			glTranslatef(0.0f, 0.3f, 0.0f);
-			
-			// 脖子
-			glColor3f(skin[0], skin[1], skin[2]);
-			glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(skin));
-			cylinder.drawCylinder(0.05f, 0.1f, 32);
-			
-			// 头部
-			glTranslatef(0.0f, 0.15f, 0.0f);
-			
-			// 启用纹理
-			if (headTexture != null) {
-				glColor3f(1.0f, 1.0f, 1.0f);
-				glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(white));
-				glEnable(GL_TEXTURE_2D);
-				headTexture.bind();
-				texSphere.DrawTexSphere(0.2f, 32, 32, headTexture);
-				glDisable(GL_TEXTURE_2D);
-			} else {
-				glColor3f(skin[0], skin[1], skin[2]);
-				glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(skin));
-				sphere.drawSphere(0.2f, 32, 32);
-			}
-		}
-		glPopMatrix();
-	}
-
-	private void drawArm(float xOffset, float rotation) {
-		glPushMatrix();
-		{
-			// 手臂位置从躯干中心向两侧偏移
-			glTranslatef(xOffset, 0.15f, 0.0f);
-			
-			// 肩部
-			glColor3f(shirt[0], shirt[1], shirt[2]);
-			glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(shirt));
-			sphere.drawSphere(0.1f, 32, 32);
-			
-			// 将手臂旋转90度使其垂直
-			glRotatef(90, 1.0f, 0.0f, 0.0f);
-			
-			// 修改摆动旋转轴为x轴(前后摆动)
-			float shoulderRotation = Math.max(-30, Math.min(30, rotation));
-			glRotatef(shoulderRotation, 1.0f, 0.0f, 0.0f);
-			
-			// 上臂
-			cylinder.drawCylinder(0.08f, 0.3f, 32);
-			
-			// 肘部
-			glTranslatef(0.0f, 0.0f, 0.3f);
-			sphere.drawSphere(0.08f, 32, 32);
-			
-			// 前臂的摆动稍微滞后于上臂
-			float elbowRotation = Math.max(-20, Math.min(20, rotation * 0.7f));
-			glRotatef(elbowRotation, 1.0f, 0.0f, 0.0f);
-			
-			// 添加肘部自然弯曲
-			float naturalBend = 15.0f + Math.abs(rotation * 0.2f);
-			glRotatef(naturalBend, 1.0f, 0.0f, 0.0f);
-			
-			cylinder.drawCylinder(0.06f, 0.3f, 32);
-			
-			// 手腕和手的部分保持不变...
-		}
-		glPopMatrix();
-	}
-
-	private void drawLeg(float xOffset, float rotation) {
-		glPushMatrix();
-		{
-			// 从原点开始，只需要x轴偏移
-			glTranslatef(xOffset, 0.0f, 0.0f);
-			
-			// 髋部
-			glColor3f(pants[0], pants[1], pants[2]);
-			glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(pants));
-			sphere.drawSphere(0.1f, 32, 32);
-			
-			// 将腿部旋转90度使其垂直
-			glRotatef(90, 1.0f, 0.0f, 0.0f);
-			
-			// 髋关节旋转
-			float hipRotation = Math.max(-25, Math.min(25, rotation));
-			glRotatef(hipRotation, 1.0f, 0.0f, 0.0f);
-			
-			// 大腿
-			cylinder.drawCylinder(0.08f, 0.4f, 32);
-			
-			// 膝盖
-			glTranslatef(0.0f, 0.0f, 0.4f);
-			sphere.drawSphere(0.08f, 32, 32);
-			
-			// 小腿的摆动根据大腿的角度调整
-			float kneeRotation;
-			if (rotation < 0) {  // 腿向后摆
-				// 向后摆时小腿可以比大腿摆得更大
-				kneeRotation = rotation * 1.5f;
-			} else {  // 腿向前摆
-				// 向前摆时小腿逐渐与大腿平行
-				float ratio = Math.abs(rotation) / 25.0f;  // 25是最大摆动角度
-				kneeRotation = rotation * (1.0f - ratio * 0.8f);  // 随着前摆逐渐减小角度差
-			}
-			
-			// 限制小腿摆动范围
-			kneeRotation = Math.max(-45, Math.min(30, kneeRotation));
-			glRotatef(kneeRotation, 1.0f, 0.0f, 0.0f);
-			
-			// 添加膝盖自然弯曲
-			float naturalKneeBend = 5.0f + Math.abs(rotation * 0.2f);
-			glRotatef(naturalKneeBend, 1.0f, 0.0f, 0.0f);
-			
-			cylinder.drawCylinder(0.07f, 0.4f, 32);
-			
-			// 脚部保持不变
-			glTranslatef(0.0f, 0.0f, 0.4f);
-			glColor3f(shoes[0], shoes[1], shoes[2]);
-			glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(shoes));
-			glScalef(1.2f, 0.8f, 1.5f);
-			sphere.drawSphere(0.08f, 32, 32);
-		}
-		glPopMatrix();
-	}
-
-	private void drawTorso(Texture bodyTexture) {
-		if (bodyTexture == null) {
-			drawTorsoWithoutTexture();
-			return;
-		}
-		
-		glPushMatrix();
-		{
-			glTranslatef(0.0f, 0.25f, 0.0f);
-			glColor3f(1.0f, 1.0f, 1.0f);
-			glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(white));
-			
-			glEnable(GL_TEXTURE_2D);
+			// Lower torso (using texture)
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			Color.white.bind();
 			bodyTexture.bind();
-			
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			
-			glRotatef(90, 1.0f, 0.0f, 0.0f);
-			
-			texCylinder.drawTexCylinder(0.2f, 0.8f, 32, bodyTexture);
-			
+			glEnable(GL_TEXTURE_2D);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			texSphere.DrawTexSphere(0.5f, 32, 32, bodyTexture);
 			glDisable(GL_TEXTURE_2D);
+
+			// chest
+			glPushMatrix();
+			{
+				glTranslatef(0.0f, 0.5f, 0.0f);
+
+				// Upper torso (using texture)
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+				Color.white.bind();
+				chestTexture.bind();
+				glEnable(GL_TEXTURE_2D);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				texSphere.DrawTexSphere(0.5f, 32, 32, chestTexture);
+				glDisable(GL_TEXTURE_2D);
+
+				// neck
+				glColor3f(orange[0], orange[1], orange[2]);
+				glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(orange));
+				glPushMatrix();
+				{
+					glTranslatef(0.0f, 0.0f, 0.0f);
+					glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+					cylinder.drawCylinder(0.15f, 0.7f, 32);
+
+					// head
+					glPushMatrix();
+					{
+						glTranslatef(0.0f, 0.0f, 1.0f);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+						Color.white.bind();
+						headTexture.bind();
+						glEnable(GL_TEXTURE_2D);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+						texSphere.DrawTexSphere(0.5f, 32, 32, headTexture);
+						glDisable(GL_TEXTURE_2D);
+					}
+					glPopMatrix();
+				}
+				glPopMatrix();
+				
+				// neck
+				glColor3f(orange[0], orange[1], orange[2]);
+				glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(orange));
+				glPushMatrix();
+				{
+					glTranslatef(0.0f, 0.0f, 0.0f);
+					glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+					// glRotatef(45.0f,0.0f,1.0f,0.0f);
+					cylinder.drawCylinder(0.15f, 0.7f, 32);
+
+					// head
+					glColor3f(red[0], red[1], red[2]);
+					glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(red));
+					glPushMatrix();
+					{
+						glTranslatef(0.0f, 0.0f, 1.0f);
+						sphere.drawSphere(0.5f, 32, 32);
+						glPopMatrix();
+					}
+					glPopMatrix();
+
+					// left shoulder
+					glColor3f(blue[0], blue[1], blue[2]);
+					glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(blue));
+					glPushMatrix();
+					{
+						glTranslatef(0.5f, 0.4f, 0.0f);
+						sphere.drawSphere(0.15f, 32, 32);
+
+						// left arm
+						glColor3f(orange[0], orange[1], orange[2]);
+						glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(orange));
+						glPushMatrix();
+						{
+							glTranslatef(0.0f, 0.0f, 0.0f);
+							glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+
+							glRotatef(LimbRotation, 1.0f, 0.0f, 0.0f);
+							// glRotatef(27.5f,0.0f,1.0f,0.0f);
+							cylinder.drawCylinder(0.15f, 0.7f, 32);
+
+							// left elbow
+							glColor3f(blue[0], blue[1], blue[2]);
+							glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(blue));
+							glPushMatrix();
+							{
+								glTranslatef(0.0f, 0.0f, 0.75f);
+								sphere.drawSphere(0.12f, 32, 32);
+
+								// left forearm
+								glColor3f(orange[0], orange[1], orange[2]);
+								glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(orange));
+								glPushMatrix();
+								{
+									glTranslatef(0.0f, 0.0f, 0.0f);
+									glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+									// glRotatef(90.0f,0.0f,1.0f,0.0f);
+									cylinder.drawCylinder(0.1f, 0.7f, 32);
+
+									// left hand
+									glColor3f(blue[0], blue[1], blue[2]);
+									glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(blue));
+									glPushMatrix();
+									{
+										glTranslatef(0.0f, 0.0f, 0.75f);
+										sphere.drawSphere(0.15f, 32, 32);
+
+									}
+									glPopMatrix();
+								}
+								glPopMatrix();
+							}
+							glPopMatrix();
+						}
+						glPopMatrix();
+					}
+					glPopMatrix();
+					// to chest
+
+					// right shoulder
+					glColor3f(blue[0], blue[1], blue[2]);
+					glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(blue));
+					glPushMatrix();
+					{
+						glTranslatef(-0.5f, 0.4f, 0.0f);
+						sphere.drawSphere(0.15f, 32, 32);
+
+						// right arm
+						glColor3f(orange[0], orange[1], orange[2]);
+						glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(orange));
+						glPushMatrix();
+						{
+							glTranslatef(0.0f, 0.0f, 0.0f);
+							glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+							glRotatef(-LimbRotation, 1.0f, 0.0f, 0.0f);
+							cylinder.drawCylinder(0.15f, 0.7f, 32);
+
+							// right elbow
+							glColor3f(blue[0], blue[1], blue[2]);
+							glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(blue));
+							glPushMatrix();
+							{
+								glTranslatef(0.0f, 0.0f, 0.75f);
+								sphere.drawSphere(0.12f, 32, 32);
+
+								// right forearm
+								glColor3f(orange[0], orange[1], orange[2]);
+								glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(orange));
+								glPushMatrix();
+								{
+									glTranslatef(0.0f, 0.0f, 0.0f);
+									glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+									cylinder.drawCylinder(0.1f, 0.7f, 32);
+
+									// right hand
+									glColor3f(blue[0], blue[1], blue[2]);
+									glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(blue));
+									glPushMatrix();
+									{
+										glTranslatef(0.0f, 0.0f, 0.75f);
+										sphere.drawSphere(0.15f, 32, 32);
+
+									}
+									glPopMatrix();
+								}
+								glPopMatrix();
+							}
+							glPopMatrix();
+						}
+						glPopMatrix();
+					}
+					glPopMatrix();
+
+					// right hip
+					glColor3f(blue[0], blue[1], blue[2]);
+					glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(blue));
+					glPushMatrix();
+					{
+						glTranslatef(0.5f, -0.75f, 0.0f);
+						sphere.drawSphere(0.20f, 32, 32);
+
+						// right high leg
+						glColor3f(orange[0], orange[1], orange[2]);
+						glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(orange));
+						glPushMatrix();
+						{
+							glTranslatef(0.0f, 0.0f, 0.0f);
+							glRotatef(RightLegRotation + 90, 1.0f, 0.0f, 0.0f);
+							cylinder.drawCylinder(0.15f, 0.7f, 32);
+
+							// right knee
+							glColor3f(blue[0], blue[1], blue[2]);
+							glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(blue));
+							glPushMatrix();
+							{
+								glTranslatef(0.0f, 0.0f, 0.75f);
+								sphere.drawSphere(0.15f, 32, 32);
+
+								// right low leg
+								glColor3f(orange[0], orange[1], orange[2]);
+								glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(orange));
+								glPushMatrix();
+								{
+									glTranslatef(0.0f, 0.0f, 0.0f);
+									glRotatef(RightKneeRotation, 1.0f, 0.0f, 0.0f);  // 使用右膝盖角度
+									cylinder.drawCylinder(0.15f, 0.7f, 32);
+
+									// right foot
+									glColor3f(blue[0], blue[1], blue[2]);
+									glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(blue));
+									glPushMatrix();
+									{
+										glTranslatef(0.0f, 0.0f, 0.75f);
+										sphere.drawSphere(0.18f, 32, 32);
+
+									}
+									glPopMatrix();
+								}
+								glPopMatrix();
+							}
+							glPopMatrix();
+						}
+						glPopMatrix();
+					}
+					glPopMatrix();
+
+				}
+				glPopMatrix();
+
+				// left hip
+				glColor3f(blue[0], blue[1], blue[2]);
+				glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(blue));
+				glPushMatrix();
+				{
+					glTranslatef(-0.5f, -0.2f, 0.0f);
+
+					sphere.drawSphere(0.20f, 32, 32);
+
+					// left high leg
+					glColor3f(orange[0], orange[1], orange[2]);
+					glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(orange));
+					glPushMatrix();
+					{
+						glTranslatef(0.0f, 0.0f, 0.0f);
+						glRotatef(LimbRotation + 90, 1.0f, 0.0f, 0.0f);
+						cylinder.drawCylinder(0.15f, 0.7f, 32);
+
+						// left knee
+						glColor3f(blue[0], blue[1], blue[2]);
+						glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(blue));
+						glPushMatrix();
+						{
+							glTranslatef(0.0f, 0.0f, 0.75f);
+							glRotatef(LeftKneeRotation, 1.0f, 0.0f, 0.0f);  // 使用左膝盖角度
+							sphere.drawSphere(0.15f, 32, 32);
+
+							// left low leg
+							glColor3f(orange[0], orange[1], orange[2]);
+							glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(orange));
+							glPushMatrix();
+							{
+								glTranslatef(0.0f, 0.0f, 0.0f);
+								cylinder.drawCylinder(0.15f, 0.7f, 32);
+
+								// left foot
+								glColor3f(blue[0], blue[1], blue[2]);
+								glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(blue));
+								glPushMatrix();
+								{
+									glTranslatef(0.0f, 0.0f, 0.75f);
+									sphere.drawSphere(0.18f, 32, 32);
+
+								}
+								glPopMatrix();
+							}
+							glPopMatrix();
+						}
+						glPopMatrix();
+					}
+					glPopMatrix();
+				}
+				glPopMatrix();
+
+			}
+			glPopMatrix();
+
 		}
-		glPopMatrix();
+
 	}
+
 }
+
+/*
+ *
+ *
+ * }
+ *
+ */
+

@@ -7,61 +7,63 @@ import GraphicsObjects.Point4f;
 import GraphicsObjects.Vector4f;
 
 public class TexCube {
+	static float red[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+	static float green[] = { 0.0f, 1.0f, 0.0f, 1.0f };
+	static float blue[] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	static float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	public TexCube() {
-
 	}
 
-	// Implement using notes and looking at TexSphere
-	public void drawTexCube(Texture myTexture) {
-		Point4f vertices[] = { 
-			new Point4f(-1.0f, -1.0f, -1.0f, 0.0f), 
-			new Point4f(-1.0f, -1.0f, 1.0f, 0.0f),
-			new Point4f(-1.0f, 1.0f, -1.0f, 0.0f), 
-			new Point4f(-1.0f, 1.0f, 1.0f, 0.0f),
-			new Point4f(1.0f, -1.0f, -1.0f, 0.0f), 
-			new Point4f(1.0f, -1.0f, 1.0f, 0.0f),
-			new Point4f(1.0f, 1.0f, -1.0f, 0.0f), 
-			new Point4f(1.0f, 1.0f, 1.0f, 0.0f) 
+	public void DrawTexCube(float size, Texture myTexture) {
+		float width = size * 8.4f;    // Width is 8.4 units (to fit in the sign texture)
+		float height = size * 2.9f;    // Height is 2.9 units
+		
+		Point4f vertices[] = {
+				// The four vertices on the front
+			new Point4f(-width/2, -height/2, -size, 0.0f),  // 0
+			new Point4f(-width/2, -height/2, size, 0.0f),   // 1
+			new Point4f(-width/2, height/2, -size, 0.0f),   // 2
+			new Point4f(-width/2, height/2, size, 0.0f),    // 3
+				// The four vertices on the back
+			new Point4f(width/2, -height/2, -size, 0.0f),   // 4
+			new Point4f(width/2, -height/2, size, 0.0f),    // 5
+			new Point4f(width/2, height/2, -size, 0.0f),    // 6
+			new Point4f(width/2, height/2, size, 0.0f)      // 7
 		};
 
-		// 定义每个面的顶点顺序和纹理坐标
-		int faces[][] = { 
-			{0, 4, 5, 1}, // 前面
-			{0, 2, 6, 4}, // 左面
-			{0, 1, 3, 2}, // 底面
-			{4, 6, 7, 5}, // 右面
-			{1, 5, 7, 3}, // 后面
-			{2, 3, 7, 6}  // 顶面
-		};
-		
-		float texCoords[][] = {
-			{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}
+		int faces[][] = {
+				{0, 4, 7, 3},  // Front
+				{1, 5, 6, 2},  // Back
+				{0, 1, 5, 4},  // Bottom
+				{2, 3, 7, 6},  // Top
+				{0, 2, 6, 4},  // Left
+				{1, 3, 7, 5}   // Right
 		};
 
 		glBegin(GL_QUADS);
-		
 		for (int face = 0; face < 6; face++) {
-			// 计算法向量
 			Vector4f v = vertices[faces[face][1]].MinusPoint(vertices[faces[face][0]]);
 			Vector4f w = vertices[faces[face][3]].MinusPoint(vertices[faces[face][0]]);
 			Vector4f normal = v.cross(w).Normal();
 			glNormal3f(normal.x, normal.y, normal.z);
-			
-			// 绘制带纹理的四边形
-			for(int i = 0; i < 4; i++) {
-				glTexCoord2f(texCoords[i][0], texCoords[i][1]);
-				glVertex3f(
-					vertices[faces[face][i]].x,
-					vertices[faces[face][i]].y,
-					vertices[faces[face][i]].z
-				);
+
+			if (face == 0) {  // Display texture only on the front
+				// Texture coordinates
+				glTexCoord2f(0.0f, 1.0f); glVertex3f(vertices[faces[face][0]].x, vertices[faces[face][0]].y, vertices[faces[face][0]].z);
+				glTexCoord2f(1.0f, 1.0f); glVertex3f(vertices[faces[face][1]].x, vertices[faces[face][1]].y, vertices[faces[face][1]].z);
+				glTexCoord2f(1.0f, 0.0f); glVertex3f(vertices[faces[face][2]].x, vertices[faces[face][2]].y, vertices[faces[face][2]].z);
+				glTexCoord2f(0.0f, 0.0f); glVertex3f(vertices[faces[face][3]].x, vertices[faces[face][3]].y, vertices[faces[face][3]].z);
+			} else {  // Do not use texture on other faces, only use color
+				glColor3f(0.8f, 0.8f, 0.8f);  // Set to light gray
+				for (int vertex = 0; vertex < 4; vertex++) {
+					Point4f v1 = vertices[faces[face][vertex]];
+					glVertex3f(v1.x, v1.y, v1.z);
+				}
 			}
 		}
-		
 		glEnd();
 	}
-
 }
 
 /*
